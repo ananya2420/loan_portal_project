@@ -1,6 +1,6 @@
 //pages and routes
 //Apply component-redirect to- Review page
-//use React-hook-form
+
 
 import React from 'react';
 import { useForm } from 'react-hook-form';

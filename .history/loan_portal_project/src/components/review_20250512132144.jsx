@@ -1,6 +1,5 @@
 //pages and routes
 //reiew - redirect to- thank-you page
-//use react-hook-form
 
 import React from 'react';
 import { useForm } from 'react-hook-form';
