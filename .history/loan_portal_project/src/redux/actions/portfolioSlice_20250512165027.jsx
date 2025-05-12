@@ -1,6 +1,4 @@
 //persist data using redux
-
-
 import { createSlice } from '@reduxjs/toolkit';
 
 

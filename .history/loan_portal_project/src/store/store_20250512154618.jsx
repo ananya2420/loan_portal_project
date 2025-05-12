@@ -13,32 +13,31 @@ import themeReducer from "../redux/slices/themeSlice";
 
 // Persist only specific slices
 const formPersistConfig = {
-  key: "form",     
+  key: "form",
   storage,
 };
 
 const themePersistConfig = {
-  key: "theme",   
+  key: "theme",
   storage,
 };
 
-
+// Combine reducers and apply persist only to needed slices
 const rootReducer = combineReducers({
   portfolio: portfolioReducer,
-  form: persistReducer(formPersistConfig, formReducer),   
-  theme: persistReducer(themePersistConfig, themeReducer), 
-  session: sessionReducer, 
+  form: persistReducer(formPersistConfig, formReducer),   // persisted
+  theme: persistReducer(themePersistConfig, themeReducer), // persisted
+  session: sessionReducer, // NOT persisted
 });
 
-
+// No persistConfig at root level now — we persist selectively above
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,  
+      serializableCheck: false,
     }),
 });
-
 
 export const persistor = persistStore(store);
 

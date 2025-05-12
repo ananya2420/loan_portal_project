@@ -30,7 +30,7 @@ const rootReducer = combineReducers({
   session: sessionReducer, 
 });
 
-
+// Create the Redux store with persistedReducer
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>

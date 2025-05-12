@@ -22,15 +22,15 @@ const themePersistConfig = {
   storage,
 };
 
-
+// Combine reducers and apply persist only to needed slices
 const rootReducer = combineReducers({
   portfolio: portfolioReducer,
-  form: persistReducer(formPersistConfig, formReducer),   
-  theme: persistReducer(themePersistConfig, themeReducer), 
-  session: sessionReducer, 
+  form: persistReducer(formPersistConfig, formReducer),   // Persisted
+  theme: persistReducer(themePersistConfig, themeReducer), // Persisted
+  session: sessionReducer, // NOT persisted
 });
 
-
+// Create the Redux store with persistedReducer
 export const store = configureStore({
   reducer: rootReducer,
   middleware: (getDefaultMiddleware) =>
