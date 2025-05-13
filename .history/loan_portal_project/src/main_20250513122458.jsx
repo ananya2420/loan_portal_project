@@ -1,0 +1,63 @@
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import './index.css';
+
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { FromProvider } from './context/FormContext.jsx';
+import { persistor, store } from './store/store.jsx';
+
+import { RouterProvider, createBrowserRouter, redirect } from 'react-router-dom';
+
+import App from './App.jsx'; // Root layout component
+import Review from './components/review.jsx';
+
+import Thankyou from './components/thank-you.jsx';
+import Home from './components/Home.jsx'; 
+import NotFound from './components/NotFound.jsx';
+
+
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <App />, 
+    children: [
+      {
+        index: true,
+        element: <Home />, 
+      },
+      {
+        path: 'review',
+        element: <Review />,
+        action: async ({ request }) => {
+          const formData = await request.formData();
+          const confirm = formData.get('confirm');
+          if (confirm === 'on') {
+            return redirect('/thank-you');
+          }
+          return null;
+        },
+      },
+      {
+        path: 'thank-you',
+        element: <Thankyou />, 
+      },
+      {
+        path: '*',
+        element: <NotFound />, // Optional 404 page
+      },
+    ],
+  },
+]);
+
+createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <FromProvider>
+          <RouterProvider router={router} />
+        </FromProvider>
+      </PersistGate>
+    </Provider>
+  </React.StrictMode>
+);

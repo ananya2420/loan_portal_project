@@ -1,0 +1,34 @@
+//persist data using redux
+//use Redux toolkit for  form state,theme state and smulated user session
+
+
+// src/store/store.js
+import { configureStore } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage';
+import formReducer from './formSlice';
+
+const persistConfig = {
+  key: 'formData',
+  storage,
+};
+
+// Redux Persist reducer
+const persistedReducer = persistReducer(persistConfig, formReducer);
+
+// Configure store
+const store = configureStore({
+  reducer: {
+    formData: persistedReducer,
+  },
+  middleware: (getDefaultMiddleware) => 
+    getDefaultMiddleware({
+      serializableCheck: false, // ⚠️ Important to avoid non-serializable warnings
+    }),
+});
+
+export const persistor = persistStore(store);
+export default store;
+
+
+
