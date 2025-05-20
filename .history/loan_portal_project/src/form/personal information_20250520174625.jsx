@@ -1,0 +1,269 @@
+//Application For Structure
+//add  react hook form 
+
+import React, { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import ProgressBar from '../components/progressbar';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleTheme } from '../redux/slices/themeSlice';
+
+const sampleUsers = [
+  { name: 'Gourab Sen', dob: '1990-01-01', phone: '1234567890', email: 'gourab@gmail.com' },
+  { name: 'Alice Johnson', dob: '1985-05-15', phone: '9876543210', email: 'alice@example.com' },
+  { name: 'Bob Smith', dob: '1978-10-20', phone: '5555555555', email: 'bob@example.com' },
+  // add more sample users here if needed
+];
+
+const PersonalInformation = ({ setUserData }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const theme = useSelector((state) => state.theme.theme);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isValid },
+    watch,
+    setValue,
+  } = useForm({
+    mode: 'onChange',
+    defaultValues: { name: '', dob: '', phone: '', email: '' },
+  });
+
+  const [filteredUsers, setFilteredUsers] = useState([]);
+
+  // Watch the name input value for filtering suggestions
+  const watchName = watch('name');
+
+  React.useEffect(() => {
+    if (watchName) {
+      const filtered = sampleUsers.filter((user) =>
+        user.name.toLowerCase().includes(watchName.toLowerCase())
+      );
+      setFilteredUsers(filtered);
+    } else {
+      setFilteredUsers([]);
+    }
+  }, [watchName]);
+
+  const totalFields = 4;
+  const allFields = watch();
+
+  const validFieldsCount = Object.keys(allFields).filter(
+    (field) => !errors[field] && allFields[field]
+  ).length;
+
+  const onSubmit = () => {
+    // setUserData((prev) => ({ ...prev, personalInfo: data }));
+    navigate('/apply/employee-details');
+  };
+
+  const handleToggleTheme = () => {
+    dispatch(toggleTheme());
+  };
+
+  // When user clicks a suggestion, fill all fields
+  const handleSelectUser = (user) => {
+    setValue('name', user.name);
+    setValue('dob', user.dob);
+    setValue('phone', user.phone);
+    setValue('email', user.email);
+    setFilteredUsers([]); // hide suggestions
+  };
+
+  return (
+    <div
+      className={`min-h-screen flex flex-col items-center justify-center p-6 transition-all duration-300 ${
+        theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'
+      }`}
+    >
+      {/* Toggle Theme */}
+      <div className="w-full max-w-md flex justify-end mb-4">
+        <button
+          onClick={handleToggleTheme}
+          className="text-sm px-3 py-1 bg-indigo-500 text-white rounded hover:bg-indigo-600 transition"
+        >
+          Toggle Theme
+        </button>
+      </div>
+
+      {/* Form */}
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        autoComplete="off"
+        className={`p-8 rounded-lg shadow-md w-full max-w-md text-center transition-all duration-300 ${
+          theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+        }`}
+      >
+        {/* Step labels 0 to 5 */}
+        <div className="w-full max-w-md mb-6 flex justify-between text-sm font-semibold">
+          <div className="flex flex-col items-center">
+            <span className="text-blue-600 font-bold">0</span>
+            <span>Apply</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-blue-600 font-bold">1</span>
+            <span>Personal Info</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span>2</span>
+            <span>Employee Details</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span>3</span>
+            <span>Loan Details</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span>4</span>
+            <span>Document Updates</span>
+          </div>
+          <div className="flex flex-col items-center">
+            <span>5</span>
+            <span>Review</span>
+          </div>
+        </div>
+
+        <ProgressBar currentStep={validFieldsCount} totalSteps={totalFields} />
+
+        <h2 className="mb-4 text-2xl font-bold text-center">Personal Information</h2>
+
+        {/* Full Name with suggestions */}
+        <div className="text-left relative">
+          {(allFields.name || document.activeElement === document.getElementById('nameInput')) && (
+            <label
+              htmlFor="nameInput"
+              className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+              }`}
+            >
+              Full Name
+            </label>
+          )}
+          <input
+            id="nameInput"
+            placeholder="Full Name"
+            autoComplete="off"
+            {...register('name', { required: 'Full Name is required' })}
+            className={`w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                : 'bg-white border-gray-300 text-black placeholder-gray-500'
+            }`}
+          />
+          {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
+
+          {/* Suggestions dropdown */}
+          {filteredUsers.length > 0 && (
+            <ul
+              className={`absolute z-10 w-full max-h-40 overflow-auto mt-1 bg-white border border-gray-300 rounded shadow-lg ${
+                theme === 'dark' ? 'bg-gray-700 text-white border-gray-600' : ''
+              }`}
+            >
+              {filteredUsers.map((user, idx) => (
+                <li
+                  key={idx}
+                  className="cursor-pointer px-3 py-2 hover:bg-blue-500 hover:text-white"
+                  onClick={() => handleSelectUser(user)}
+                >
+                  {user.name}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Date of Birth */}
+        <div className="text-left mt-4">
+          {(allFields.dob || document.activeElement === document.getElementById('dobInput')) && (
+            <label
+              htmlFor="dobInput"
+              className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+              }`}
+            >
+              Date of Birth
+            </label>
+          )}
+          <input
+            id="dobInput"
+            type="date"
+            {...register('dob', { required: 'Date of Birth is required' })}
+            className={`w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                : 'bg-white border-gray-300 text-black placeholder-gray-500'
+            }`}
+          />
+          {errors.dob && <p className="text-sm text-red-500 mt-1">{errors.dob.message}</p>}
+        </div>
+
+        {/* Phone Number */}
+        <div className="text-left mt-4">
+          {(allFields.phone || document.activeElement === document.getElementById('phoneInput')) && (
+            <label
+              htmlFor="phoneInput"
+              className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+              }`}
+            >
+              Phone Number
+            </label>
+          )}
+          <input
+            id="phoneInput"
+            placeholder="Phone Number"
+            {...register('phone', { required: 'Phone Number is required' })}
+            className={`w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                : 'bg-white border-gray-300 text-black placeholder-gray-500'
+            }`}
+          />
+          {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>}
+        </div>
+
+        {/* Email */}
+        <div className="text-left mt-4">
+          {(allFields.email || document.activeElement === document.getElementById('emailInput')) && (
+            <label
+              htmlFor="emailInput"
+              className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+              }`}
+            >
+              Email
+            </label>
+          )}
+          <input
+            id="emailInput"
+            type="email"
+            placeholder="Email"
+            {...register('email', { required: 'Email is required' })}
+            className={`w-full p-3 rounded border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                : 'bg-white border-gray-300 text-black placeholder-gray-500'
+            }`}
+          />
+          {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
+        </div>
+
+        {/* Submit */}
+        <button
+          disabled={!isValid}
+          type="submit"
+          className={`mt-6 w-full p-3 rounded font-semibold text-white transition ${
+            isValid ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-400 cursor-not-allowed'
+          }`}
+        >
+          Next
+        </button>
+      </form>
+    </div>
+  );
+};
+
+export default PersonalInformation;
+
+

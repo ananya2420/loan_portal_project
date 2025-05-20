@@ -1,0 +1,157 @@
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+
+const Summary = ({ userData = {}, onSubmit }) => {
+  const navigate = useNavigate();
+  const [step, setStep] = useState('view');
+
+  const {
+    personalInfo = {},
+    employeeDetails = {},
+    loanDetails = {},
+    documentUpdates = {}
+  } = userData;
+
+  useEffect(() => {
+    console.log('User Data:', userData);
+  }, [userData]);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors }
+  } = useForm({ defaultValues: personalInfo });
+
+  const submitUpdatedInfo = (data) => {
+    onSubmit(data);
+    setStep('view');
+  };
+
+  const handleGoToReview = () => {
+    navigate('/apply/review');
+  };
+
+  if (!personalInfo?.name) {
+    return (
+      <div className="p-6 text-center text-red-600 font-semibold">
+        No user data available. Please complete the form steps before accessing the summary.
+      </div>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-xl shadow-lg mt-10 space-y-6">
+      <h2 className="text-3xl font-bold text-center text-gray-800">User Summary</h2>
+
+      {/* View Mode */}
+      {step === 'view' && (
+        <>
+          <section className="bg-gray-50 border border-gray-200 p-5 rounded-lg">
+            <h3 className="text-xl font-semibold mb-3 text-gray-700">Personal Information</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
+              <p><strong>Name:</strong> {personalInfo.name}</p>
+              <p><strong>Date of Birth:</strong> {personalInfo.dob}</p>
+              <p><strong>Phone:</strong> {personalInfo.phone}</p>
+              <p><strong>Email:</strong> {personalInfo.email}</p>
+            </div>
+          </section>
+
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setStep('edit')}
+              className="px-6 py-2 bg-yellow-500 text-white font-medium rounded hover:bg-yellow-600"
+            >
+              Edit
+            </button>
+            <button
+              onClick={() => setStep('submit')}
+              className="px-6 py-2 bg-green-600 text-white font-medium rounded hover:bg-green-700"
+            >
+              Submit
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Edit Mode */}
+      {step === 'edit' && (
+        <form onSubmit={handleSubmit(submitUpdatedInfo)} className="bg-gray-50 border border-gray-200 p-5 rounded-lg space-y-5">
+          <h3 className="text-xl font-semibold text-gray-700">Edit Personal Info</h3>
+
+          {['name', 'dob', 'phone', 'email'].map((field) => (
+            <div key={field}>
+              <label className="block font-semibold mb-1 capitalize">{field}</label>
+              <input
+                placeholder={`Enter ${field}`}
+                {...register(field, { required: `${field} is required` })}
+                className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {errors[field] && (
+                <p className="text-red-500 text-sm mt-1">{errors[field].message}</p>
+              )}
+            </div>
+          ))}
+
+          <div className="flex justify-between">
+            <button
+              type="button"
+              onClick={() => setStep('view')}
+              className="px-6 py-2 bg-gray-400 text-white rounded hover:bg-gray-500"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              Save
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* Submit Mode */}
+      {step === 'submit' && (
+        <>
+          <section className="bg-gray-50 border border-gray-200 p-5 rounded-lg">
+            <h3 className="text-xl font-semibold mb-3 text-gray-700">Employee Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
+              <p><strong>Status:</strong> {employeeDetails.status || 'N/A'}</p>
+              <p><strong>Company:</strong> {employeeDetails.company || 'N/A'}</p>
+              <p><strong>Monthly Income:</strong> ${employeeDetails.income || 'N/A'}</p>
+              <p><strong>Experience:</strong> {employeeDetails.experience || 'N/A'} years</p>
+              <p><strong>Tax ID:</strong> {employeeDetails.taxId || 'N/A'}</p>
+            </div>
+          </section>
+
+          <section className="bg-gray-50 border border-gray-200 p-5 rounded-lg">
+            <h3 className="text-xl font-semibold mb-3 text-gray-700">Loan Details</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-600">
+              <p><strong>Amount:</strong> ${loanDetails.amount || 'N/A'}</p>
+              <p><strong>Type:</strong> {loanDetails.type || 'N/A'}</p>
+              <p><strong>Term:</strong> {loanDetails.term || 'N/A'}</p>
+              <p><strong>EMI Date:</strong> {loanDetails.emiDate || 'N/A'}</p>
+            </div>
+          </section>
+
+          <section className="bg-gray-50 border border-gray-200 p-5 rounded-lg">
+            <h3 className="text-xl font-semibold mb-3 text-gray-700">Document Updates</h3>
+            <p className="text-gray-600"><strong>ID Updated:</strong> {documentUpdates?.isUpdated ? 'Yes' : 'No'}</p>
+          </section>
+
+          <div className="flex justify-center mt-6">
+            <button
+              onClick={handleGoToReview}
+              className="px-6 py-2 bg-blue-600 text-white font-medium rounded hover:bg-blue-700"
+            >
+              Go to Review
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+export default Summary;
