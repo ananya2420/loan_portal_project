@@ -21,7 +21,7 @@ const Summary = () => {
     documentUpdates = {},
   } = useSelector((state) => state.formData || {});
 
-  console.log('Redux personalInfo:', personalInfo);
+  
 
   const theme = useSelector((state) => state.theme.theme);
 

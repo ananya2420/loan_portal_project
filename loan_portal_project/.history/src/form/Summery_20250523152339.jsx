@@ -21,8 +21,6 @@ const Summary = () => {
     documentUpdates = {},
   } = useSelector((state) => state.formData || {});
 
-  console.log('Redux personalInfo:', personalInfo);
-
   const theme = useSelector((state) => state.theme.theme);
 
   const [isEditing, setIsEditing] = useState(false);
@@ -165,7 +163,7 @@ const Summary = () => {
   return (
     <div className={`min-h-screen p-4 ${theme === 'dark' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-black'}`}>
 
-      {/* Toggle Theme Button */}
+       {/* Toggle Theme Button */}
       <div className="max-w-3xl mx-auto mb-2 flex justify-end">
         <button
           onClick={() => dispatch(toggleTheme())}
@@ -210,7 +208,8 @@ const Summary = () => {
         </div>
       </div>
 
-      {/* Progress Bar */}
+
+       {/* Progress Bar */}
       <div className="w-full max-w-md mx-auto">
         <div className="relative pt-1 mb-6">
           <div className="flex items-center justify-between mb-2">
@@ -218,6 +217,7 @@ const Summary = () => {
               Step 6 of 8
             </span>
             <span className="text-xs font-semibold text-teal-600">60%</span>
+
           </div>
           <div className="flex h-2 overflow-hidden text-xs bg-teal-200 rounded">
             <div
@@ -227,6 +227,8 @@ const Summary = () => {
           </div>
         </div>
       </div>
+
+    
 
       {/* Summary Card */}
       <div
@@ -283,13 +285,12 @@ const Summary = () => {
                   {
                     label: 'Name',
                     value:
-                      personalInfo?.name ||
-                      (personalInfo?.firstName && personalInfo?.lastName
+                      personalInfo?.firstName && personalInfo?.lastName
                         ? `${personalInfo.firstName} ${personalInfo.lastName}`
-                        : 'N/A'),
+                        : personalInfo?.fullName || personalInfo?.name || 'N/A',
                   },
-                  { label: 'Date of Birth', value: personalInfo?.dob || personalInfo?.dateOfBirth || 'N/A' },
-                  { label: 'Phone', value: personalInfo?.phone || personalInfo?.phoneNumber || 'N/A' },
+                  { label: 'Date of Birth', value: personalInfo?.dateOfBirth || personalInfo?.dob || 'N/A' },
+                  { label: 'Phone', value: personalInfo?.phoneNumber || personalInfo?.phone || 'N/A' },
                   { label: 'Email', value: personalInfo?.email || 'N/A' },
                 ],
               },
