@@ -8,19 +8,14 @@ import { setPersonalInfo } from '../store/formSlice';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
-const sampleUsers = [];
+const sampleUsers = []; // You can populate this if needed
 
 const PersonalInformation = () => {
-  const personalInfo = useSelector((state) => state.formData.personalInfo);
-
-  const [selectedDate, setSelectedDate] = useState(
-    personalInfo?.dob ? new Date(personalInfo.dob) : null
-  );
-  const [dobError, setDobError] = useState('');
-
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+
   const theme = useSelector((state) => state.theme.theme);
+  const personalInfo = useSelector((state) => state.formData.personalInfo);
 
   const {
     register,
@@ -33,6 +28,7 @@ const PersonalInformation = () => {
     defaultValues: personalInfo || { name: '', dob: '', phone: '', email: '' },
   });
 
+  const [selectedDate, setSelectedDate] = useState(null);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [focusedField, setFocusedField] = useState('');
   const [hoverField, setHoverField] = useState('');
@@ -40,6 +36,20 @@ const PersonalInformation = () => {
   const totalSteps = 8;
   const allFields = watch();
   const watchName = watch('name');
+
+  useEffect(() => {
+    register('dob', { required: 'Date of Birth is required' });
+  }, [register]);
+
+  useEffect(() => {
+    if (personalInfo?.dob) {
+      const parsedDate = new Date(personalInfo.dob);
+      if (!isNaN(parsedDate)) {
+        setSelectedDate(parsedDate);
+        setValue('dob', personalInfo.dob);
+      }
+    }
+  }, [personalInfo, setValue]);
 
   useEffect(() => {
     if (watchName || ['name', 'phone', 'email'].includes(focusedField)) {
@@ -53,16 +63,13 @@ const PersonalInformation = () => {
   }, [watchName, focusedField]);
 
   const onSubmit = (data) => {
-    if (!selectedDate) {
-      setDobError('Date of Birth is required');
-      return;
-    } else {
-      setDobError('');
-    }
-
-    const completeData = { ...data, dob: selectedDate.toISOString().split('T')[0] };
-    dispatch(setPersonalInfo(completeData));
+    dispatch(setPersonalInfo(data));
     navigate('/apply/employee-details');
+  };
+
+  const handleBack = () => {
+    dispatch(setPersonalInfo(watch()));
+    navigate('/apply');
   };
 
   const handleToggleTheme = () => {
@@ -72,13 +79,10 @@ const PersonalInformation = () => {
   const handleSelectUser = (user) => {
     setValue('name', user.name);
     setValue('dob', user.dob);
+    setSelectedDate(new Date(user.dob));
     setValue('phone', user.phone);
     setValue('email', user.email);
     setFilteredUsers([]);
-  };
-
-  const handleBack = () => {
-    navigate('/apply');
   };
 
   return (
@@ -88,6 +92,7 @@ const PersonalInformation = () => {
       }`}
     >
       <div className="w-full max-w-md">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
           <button
@@ -98,6 +103,7 @@ const PersonalInformation = () => {
           </button>
         </div>
 
+        {/* Stepper */}
         <div className="mb-6 grid grid-cols-8 gap-2 text-xs font-semibold text-center">
           {[
             { step: 1, label: 'Apply', path: '/apply' },
@@ -130,6 +136,7 @@ const PersonalInformation = () => {
           ))}
         </div>
 
+        {/* Progress Info */}
         <div className="relative pt-1 mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="inline-block px-2 py-1 text-xs font-semibold text-teal-600 uppercase bg-teal-200 rounded-full">
@@ -137,14 +144,15 @@ const PersonalInformation = () => {
             </span>
             <span className="text-xs font-semibold text-teal-600">20%</span>
           </div>
-          <div className="flex h-2 overflow-hidden text-xs bg-teal-200 rounded">
+          <div className="flex h-2 overflow-hidden bg-teal-200 rounded">
             <div
               style={{ width: '20%' }}
-              className="flex flex-col justify-center text-center text-white transition-all duration-500 bg-green-500 shadow-none whitespace-nowrap"
+              className="bg-green-500 transition-all duration-500"
             />
           </div>
         </div>
 
+        {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           autoComplete="off"
@@ -168,7 +176,6 @@ const PersonalInformation = () => {
               {...register('name', { required: 'Full Name is required' })}
               onFocus={() => setFocusedField('name')}
               onBlur={() => setFocusedField('')}
-
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
@@ -196,16 +203,16 @@ const PersonalInformation = () => {
               selected={selectedDate}
               onChange={(date) => {
                 setSelectedDate(date);
-                if (date) setDobError('');
+                setValue('dob', date ? date.toISOString().split('T')[0] : '');
               }}
               placeholderText="Date of Birth"
               dateFormat="yyyy-MM-dd"
               showMonthDropdown
               showYearDropdown
               dropdownMode="select"
-              className="w-[384px] px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-left"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-left"
             />
-            {dobError && <p className="text-sm text-red-500 mt-1">{dobError}</p>}
+            {errors.dob && <p className="text-sm text-red-500 mt-1">{errors.dob.message}</p>}
           </div>
 
           {/* Phone */}
@@ -252,18 +259,20 @@ const PersonalInformation = () => {
             <button
               type="button"
               onClick={handleBack}
-              className={`px-4 py-2 rounded transition border ${
-                theme === 'dark' ? 'text-white border-gray-500 hover:bg-gray-700' : 'text-gray-700 border-gray-200 hover:bg-gray-100'
+              className={`px-4 py-2 rounded border transition ${
+                theme === 'dark'
+                  ? 'text-white border-gray-500 hover:bg-gray-700'
+                  : 'text-gray-700 border-gray-200 hover:bg-gray-100'
               }`}
             >
               Back
             </button>
             <button
               type="submit"
-              className={`px-6 py-3 text-white transition duration-300 rounded-lg ${
+              disabled={!isValid}
+              className={`px-6 py-3 text-white rounded-lg transition duration-300 ${
                 isValid ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-emerald-400 cursor-not-allowed'
               }`}
-              disabled={!isValid}
             >
               Next
             </button>
@@ -275,3 +284,10 @@ const PersonalInformation = () => {
 };
 
 export default PersonalInformation;
+
+
+
+
+
+
+

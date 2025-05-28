@@ -8,18 +8,16 @@ const DocumentUpdates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
-  const documentUpdates = useSelector((state) => state.formData.documentUpdates);
+  const documentUpdates = useSelector((state) => state.form.documentUpdates); // adjust if your slice path differs
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm();
 
   const [preview, setPreview] = useState(null);
 
-  // On mount, load preview from Redux if available
+  // On mount, set preview from Redux if exists
   useEffect(() => {
     if (documentUpdates.previewUrl) {
       setPreview(documentUpdates.previewUrl);
-      // Also set form value so react-hook-form knows about the file (optional)
-      // Can't really set file object here from URL, so skipping that part
     }
   }, [documentUpdates.previewUrl]);
 
@@ -28,16 +26,36 @@ const DocumentUpdates = () => {
     if (file) {
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
+
+      // Update form value manually for react-hook-form
       setValue('document', e.target.files);
+
+      // Dispatch updated file info to Redux immediately for persistence
+      dispatch(
+        setDocumentUpdates({
+          isUpdated: 'true',
+          fileName: file.name,
+          previewUrl: previewUrl,
+        })
+      );
     } else {
       setPreview(null);
+      dispatch(
+        setDocumentUpdates({
+          isUpdated: 'false',
+          fileName: '',
+          previewUrl: '',
+        })
+      );
     }
   };
 
   const onSubmit = (data) => {
+    // data.document is a FileList
     const file = data.document?.[0];
     const isUpdated = !!file;
 
+    // Dispatch updates on submit as well (optional if already dispatched on change)
     dispatch(
       setDocumentUpdates({
         isUpdated: isUpdated.toString(),
@@ -55,17 +73,6 @@ const DocumentUpdates = () => {
 
   const currentStep = 5;
   const totalSteps = 8;
-
-  const stepRoutes = {
-    1: '/apply/apply',
-    2: '/apply/personal-info',
-    3: '/apply/employee-details',
-    4: '/apply/loan-details',
-    5: '/apply/document-updates',
-    6: '/apply/summary',
-    7: '/apply/review',
-    8: '/apply/thank-you',
-  };
 
   return (
     <div

@@ -8,18 +8,21 @@ const DocumentUpdates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
-  const documentUpdates = useSelector((state) => state.formData.documentUpdates);
+  const documentUpdates = useSelector((state) => state.form.documentUpdates);
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm();
 
   const [preview, setPreview] = useState(null);
 
-  // On mount, load preview from Redux if available
   useEffect(() => {
+    // Check Redux first, fallback to localStorage
     if (documentUpdates.previewUrl) {
       setPreview(documentUpdates.previewUrl);
-      // Also set form value so react-hook-form knows about the file (optional)
-      // Can't really set file object here from URL, so skipping that part
+    } else {
+      const storedPreview = localStorage.getItem('previewUrl');
+      if (storedPreview) {
+        setPreview(storedPreview);
+      }
     }
   }, [documentUpdates.previewUrl]);
 
@@ -29,20 +32,29 @@ const DocumentUpdates = () => {
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
       setValue('document', e.target.files);
+      localStorage.setItem('previewUrl', previewUrl); // Optional: persist
+
+      dispatch(
+        setDocumentUpdates({
+          isUpdated: true,
+          fileName: file.name,
+          previewUrl,
+        })
+      );
     } else {
       setPreview(null);
+      localStorage.removeItem('previewUrl');
     }
   };
 
   const onSubmit = (data) => {
-    const file = data.document?.[0];
-    const isUpdated = !!file;
+    const file = data.document?.[0] || null;
 
     dispatch(
       setDocumentUpdates({
-        isUpdated: isUpdated.toString(),
-        fileName: file?.name || '',
-        previewUrl: preview || '',
+        isUpdated: !!file,
+        fileName: file?.name || documentUpdates.fileName || '',
+        previewUrl: preview || documentUpdates.previewUrl || '',
       })
     );
 
@@ -56,16 +68,16 @@ const DocumentUpdates = () => {
   const currentStep = 5;
   const totalSteps = 8;
 
-  const stepRoutes = {
-    1: '/apply/apply',
-    2: '/apply/personal-info',
-    3: '/apply/employee-details',
-    4: '/apply/loan-details',
-    5: '/apply/document-updates',
-    6: '/apply/summary',
-    7: '/apply/review',
-    8: '/apply/thank-you',
-  };
+  const steps = [
+    { step: 1, label: 'Apply', path: '/apply' },
+    { step: 2, label: (<><span>Personal</span><br /><span>Info</span></>), path: '/apply/personal-info' },
+    { step: 3, label: (<><span>Employee</span><br /><span>Details</span></>), path: '/apply/employee-details' },
+    { step: 4, label: (<><span>Loan</span><br /><span>Details</span></>), path: '/apply/loan-details' },
+    { step: 5, label: (<><span>Document</span><br /><span>Updates</span></>), path: '/apply/document-updates' },
+    { step: 6, label: 'Summary', path: '/apply/summary' },
+    { step: 7, label: 'Review', path: '/apply/review' },
+    { step: 8, label: 'Thank you', path: '/apply/thank-you' },
+  ];
 
   return (
     <div
@@ -74,7 +86,6 @@ const DocumentUpdates = () => {
       }`}
     >
       <div className="w-full max-w-md">
-
         {/* Theme Toggle */}
         <div className="flex items-center justify-end mb-4">
           <button
@@ -87,16 +98,7 @@ const DocumentUpdates = () => {
 
         {/* Step Indicator */}
         <div className="mb-6 grid grid-cols-8 gap-x-3 gap-y-2 text-xs font-semibold text-center">
-          {[
-            { step: 1, label: 'Apply', path: '/apply' },
-            { step: 2, label: (<><span>Personal</span><br /><span>Info</span></>), path: '/apply/personal-info' },
-            { step: 3, label: (<><span>Employee</span><br /><span>Details</span></>), path: '/apply/employee-details' },
-            { step: 4, label: (<><span>Loan</span><br /><span>Details</span></>), path: '/apply/loan-details' },
-            { step: 5, label: (<><span>Document</span><br /><span>Updates</span></>), path: '/apply/document-updates' },
-            { step: 6, label: 'Summary', path: '/apply/summary' },
-            { step: 7, label: 'Review', path: '/apply/review' },
-            { step: 8, label: 'Thank you', path: '/thank-you' },
-          ].map(({ step, label, path }) => (
+          {steps.map(({ step, label, path }) => (
             <div
               key={step}
               className="flex flex-col items-center col-span-1 cursor-pointer"
@@ -144,7 +146,7 @@ const DocumentUpdates = () => {
           <div className="mb-6">
             <label
               htmlFor="document-upload"
-              className={`px-4 py-2 rounded transition border ${
+              className={`px-4 py-2 rounded transition border cursor-pointer ${
                 theme === 'dark'
                   ? 'text-white border-gray-500 hover:bg-gray-700'
                   : 'text-gray-700 border-gray-200 hover:bg-gray-100'

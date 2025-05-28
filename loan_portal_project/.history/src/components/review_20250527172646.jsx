@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useForm } from 'react-hook-form';
@@ -6,9 +6,6 @@ import { toggleTheme } from '../redux/slices/themeSlice';
 import { setConfirmation } from '../redux/slices/formSlice';
 
 const Review = () => {
-
-  const [step, setStep] = useState(7);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
@@ -40,8 +37,10 @@ const Review = () => {
     navigate('/apply/summary');
   };
 
-  // *** Step 7: Review ***
-  const steps = [
+  const currentStep = 7;
+
+
+   const steps = [
     { step: 1, label: 'Apply', path: '/apply' },
     { step: 2, label: <>Personal<br />Info</>, path: '/apply/personal-info' },
     { step: 3, label: <>Employee<br />Details</>, path: '/apply/employee-details' },
@@ -68,30 +67,34 @@ const Review = () => {
         </button>
       </div>
 
-      {/* Step Indicator */}
-      <div className="mb-6 grid grid-cols-8 gap-0 text-xs font-semibold text-center">
-        {steps.map(({ step: s, label, path }) => (
-          <div
-            key={s}
-            className="flex flex-col items-center col-span-1 cursor-pointer"
-            onClick={() => {
-              setStep(s);
-              navigate(path);
-            }}
-          >
-            <span
-              className={`w-7 h-7 flex items-center justify-center rounded-full font-bold ${
-                s === step ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'
-              }`}
+
+    {/* Step Indicator */}
+    <div className="mb-6 grid grid-cols-8 gap-2 text-xs font-semibold text-center">
+          {steps.map(({ step: s, label, path }) => (
+            <div
+              key={s}
+              className="flex flex-col items-center col-span-1 cursor-pointer"
+              onClick={() => {
+                setStep(s);
+                navigate(path);
+              }}
             >
-              {s}
-            </span>
-            <span className="mt-1 truncate" title={typeof label === 'string' ? label : undefined}>
-              {label}
-            </span>
-          </div>
-        ))}
-      </div>
+              <span
+                className={`w-7 h-7 flex items-center justify-center rounded-full font-bold ${
+                  s === step ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'
+                }`}
+              >
+                {s}
+              </span>
+              <span className="mt-1 truncate" title={typeof label === 'string' ? label : undefined}>
+                {label}
+              </span>
+            </div>
+          ))}
+        </div>
+
+
+
 
       {/* Progress Bar */}
       <div className="w-full max-w-md mx-auto">
@@ -163,7 +166,6 @@ const Review = () => {
 };
 
 export default Review;
-
 
 
 

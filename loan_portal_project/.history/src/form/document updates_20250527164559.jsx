@@ -8,20 +8,18 @@ const DocumentUpdates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
-  const documentUpdates = useSelector((state) => state.formData.documentUpdates);
+  const documentUpdates = useSelector((state) => state.form.documentUpdates);
 
   const { register, handleSubmit, formState: { errors }, setValue } = useForm();
-
   const [preview, setPreview] = useState(null);
 
-  // On mount, load preview from Redux if available
+  // Load preview from Redux/localStorage on mount
   useEffect(() => {
-    if (documentUpdates.previewUrl) {
-      setPreview(documentUpdates.previewUrl);
-      // Also set form value so react-hook-form knows about the file (optional)
-      // Can't really set file object here from URL, so skipping that part
+    const storedPreview = documentUpdates?.previewUrl || localStorage.getItem('previewUrl');
+    if (storedPreview) {
+      setPreview(storedPreview);
     }
-  }, [documentUpdates.previewUrl]);
+  }, [documentUpdates]);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -29,8 +27,10 @@ const DocumentUpdates = () => {
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
       setValue('document', e.target.files);
+      localStorage.setItem('previewUrl', previewUrl); // Persist preview URL
     } else {
       setPreview(null);
+      localStorage.removeItem('previewUrl');
     }
   };
 
@@ -56,17 +56,6 @@ const DocumentUpdates = () => {
   const currentStep = 5;
   const totalSteps = 8;
 
-  const stepRoutes = {
-    1: '/apply/apply',
-    2: '/apply/personal-info',
-    3: '/apply/employee-details',
-    4: '/apply/loan-details',
-    5: '/apply/document-updates',
-    6: '/apply/summary',
-    7: '/apply/review',
-    8: '/apply/thank-you',
-  };
-
   return (
     <div
       className={`min-h-screen flex flex-col items-center justify-center p-6 transition-all duration-300 ${
@@ -74,7 +63,6 @@ const DocumentUpdates = () => {
       }`}
     >
       <div className="w-full max-w-md">
-
         {/* Theme Toggle */}
         <div className="flex items-center justify-end mb-4">
           <button

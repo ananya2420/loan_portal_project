@@ -8,18 +8,15 @@ const DocumentUpdates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
-  const documentUpdates = useSelector((state) => state.formData.documentUpdates);
-
+  const documentUpdates = useSelector((state) => state.form.documentUpdates);
   const { register, handleSubmit, formState: { errors }, setValue } = useForm();
 
   const [preview, setPreview] = useState(null);
 
-  // On mount, load preview from Redux if available
+  // Restore preview from Redux on mount
   useEffect(() => {
     if (documentUpdates.previewUrl) {
       setPreview(documentUpdates.previewUrl);
-      // Also set form value so react-hook-form knows about the file (optional)
-      // Can't really set file object here from URL, so skipping that part
     }
   }, [documentUpdates.previewUrl]);
 
@@ -29,6 +26,15 @@ const DocumentUpdates = () => {
       const previewUrl = URL.createObjectURL(file);
       setPreview(previewUrl);
       setValue('document', e.target.files);
+
+      // Immediately store preview in Redux
+      dispatch(
+        setDocumentUpdates({
+          isUpdated: 'true',
+          fileName: file.name,
+          previewUrl,
+        })
+      );
     } else {
       setPreview(null);
     }
@@ -74,7 +80,6 @@ const DocumentUpdates = () => {
       }`}
     >
       <div className="w-full max-w-md">
-
         {/* Theme Toggle */}
         <div className="flex items-center justify-end mb-4">
           <button
@@ -198,3 +203,4 @@ const DocumentUpdates = () => {
 };
 
 export default DocumentUpdates;
+

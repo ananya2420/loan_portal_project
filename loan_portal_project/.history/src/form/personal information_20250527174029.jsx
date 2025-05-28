@@ -7,20 +7,15 @@ import ProgressBar from '../components/progressbar';
 import { setPersonalInfo } from '../store/formSlice';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
 const sampleUsers = [];
 
 const PersonalInformation = () => {
-  const personalInfo = useSelector((state) => state.formData.personalInfo);
-
-  const [selectedDate, setSelectedDate] = useState(
-    personalInfo?.dob ? new Date(personalInfo.dob) : null
-  );
-  const [dobError, setDobError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
+  const personalInfo = useSelector((state) => state.formData.personalInfo);
 
   const {
     register,
@@ -41,6 +36,20 @@ const PersonalInformation = () => {
   const allFields = watch();
   const watchName = watch('name');
 
+  // Register dob field with validation
+  useEffect(() => {
+    register('dob', { required: 'Date of Birth is required' });
+  }, [register]);
+
+  // Sync dob from redux state to react-hook-form and local state
+  useEffect(() => {
+    if (personalInfo?.dob) {
+      const parsedDate = new Date(personalInfo.dob);
+      setSelectedDate(parsedDate);
+      setValue('dob', personalInfo.dob);
+    }
+  }, [personalInfo, setValue]);
+
   useEffect(() => {
     if (watchName || ['name', 'phone', 'email'].includes(focusedField)) {
       const filtered = sampleUsers.filter((user) =>
@@ -53,15 +62,7 @@ const PersonalInformation = () => {
   }, [watchName, focusedField]);
 
   const onSubmit = (data) => {
-    if (!selectedDate) {
-      setDobError('Date of Birth is required');
-      return;
-    } else {
-      setDobError('');
-    }
-
-    const completeData = { ...data, dob: selectedDate.toISOString().split('T')[0] };
-    dispatch(setPersonalInfo(completeData));
+    dispatch(setPersonalInfo(data));
     navigate('/apply/employee-details');
   };
 
@@ -72,12 +73,19 @@ const PersonalInformation = () => {
   const handleSelectUser = (user) => {
     setValue('name', user.name);
     setValue('dob', user.dob);
+    setSelectedDate(new Date(user.dob));
     setValue('phone', user.phone);
     setValue('email', user.email);
     setFilteredUsers([]);
   };
 
   const handleBack = () => {
+
+
+
+  }
+
+    dispatch(setPersonalInfo(currentData));
     navigate('/apply');
   };
 
@@ -88,6 +96,7 @@ const PersonalInformation = () => {
       }`}
     >
       <div className="w-full max-w-md">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
           <button
@@ -98,6 +107,7 @@ const PersonalInformation = () => {
           </button>
         </div>
 
+        {/* Stepper */}
         <div className="mb-6 grid grid-cols-8 gap-2 text-xs font-semibold text-center">
           {[
             { step: 1, label: 'Apply', path: '/apply' },
@@ -112,7 +122,9 @@ const PersonalInformation = () => {
             <div
               key={step}
               className="flex flex-col items-center col-span-1 cursor-pointer"
-              onClick={() => navigate(path)}
+              onClick={() => {
+                navigate(path);
+              }}
             >
               <span
                 className={`w-7 h-7 flex items-center justify-center rounded-full font-bold ${
@@ -125,11 +137,14 @@ const PersonalInformation = () => {
               >
                 {step}
               </span>
-              <span className="mt-1 truncate">{label}</span>
+              <span className="mt-1 truncate" title={typeof label === 'string' ? label : undefined}>
+                {label}
+              </span>
             </div>
           ))}
         </div>
 
+        {/* Progress Info */}
         <div className="relative pt-1 mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="inline-block px-2 py-1 text-xs font-semibold text-teal-600 uppercase bg-teal-200 rounded-full">
@@ -145,6 +160,7 @@ const PersonalInformation = () => {
           </div>
         </div>
 
+        {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           autoComplete="off"
@@ -168,7 +184,6 @@ const PersonalInformation = () => {
               {...register('name', { required: 'Full Name is required' })}
               onFocus={() => setFocusedField('name')}
               onBlur={() => setFocusedField('')}
-
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
@@ -196,7 +211,7 @@ const PersonalInformation = () => {
               selected={selectedDate}
               onChange={(date) => {
                 setSelectedDate(date);
-                if (date) setDobError('');
+                setValue('dob', date ? date.toISOString().split('T')[0] : '');
               }}
               placeholderText="Date of Birth"
               dateFormat="yyyy-MM-dd"
@@ -205,7 +220,7 @@ const PersonalInformation = () => {
               dropdownMode="select"
               className="w-[384px] px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-left"
             />
-            {dobError && <p className="text-sm text-red-500 mt-1">{dobError}</p>}
+            {errors.dob && <p className="text-sm text-red-500 mt-1">{errors.dob.message}</p>}
           </div>
 
           {/* Phone */}
@@ -228,6 +243,9 @@ const PersonalInformation = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.phone && <p className="text-sm text-red-500 mt-1">{errors.phone.message}</p>}
+            {hoverField === 'phone' && focusedField !== 'phone' && (
+              <ul className="absolute z-10 w-full max-h-40 overflow-auto mt-1 border rounded shadow-lg bg-white" />
+            )}
           </div>
 
           {/* Email */}
@@ -245,6 +263,9 @@ const PersonalInformation = () => {
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.email && <p className="text-sm text-red-500 mt-1">{errors.email.message}</p>}
+            {hoverField === 'email' && focusedField !== 'email' && (
+              <ul className="absolute z-10 w-full max-h-40 overflow-auto mt-1 border rounded shadow-lg bg-white" />
+            )}
           </div>
 
           {/* Buttons */}
@@ -275,3 +296,9 @@ const PersonalInformation = () => {
 };
 
 export default PersonalInformation;
+
+
+
+
+
+

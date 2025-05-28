@@ -43,7 +43,7 @@ const Thankyou = () => {
       </div>
 
          {/* Step Indicator */}
-        <div className="mb-6 grid grid-cols-8 gap-x-0 gap-y-0 text-xs font-semibold text-center">
+        <div className="mb-6 grid grid-cols-8 gap-x-3 gap-y-0 text-xs font-semibold text-center">
   {[
     { step: 1, label: 'Apply', path: '/apply' },
     { step: 2, label: (<><span>Personal</span><br /><span>Info</span></>), path: '/apply/personal-info' },

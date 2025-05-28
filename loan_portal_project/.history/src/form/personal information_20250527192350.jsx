@@ -11,16 +11,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 const sampleUsers = [];
 
 const PersonalInformation = () => {
-  const personalInfo = useSelector((state) => state.formData.personalInfo);
-
-  const [selectedDate, setSelectedDate] = useState(
-    personalInfo?.dob ? new Date(personalInfo.dob) : null
-  );
+  const [selectedDate, setSelectedDate] = useState(null);
   const [dobError, setDobError] = useState('');
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
+  const personalInfo = useSelector((state) => state.formData.personalInfo);
 
   const {
     register,
@@ -88,6 +85,7 @@ const PersonalInformation = () => {
       }`}
     >
       <div className="w-full max-w-md">
+        {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <ProgressBar currentStep={currentStep} totalSteps={totalSteps} />
           <button
@@ -98,6 +96,7 @@ const PersonalInformation = () => {
           </button>
         </div>
 
+        {/* Stepper */}
         <div className="mb-6 grid grid-cols-8 gap-2 text-xs font-semibold text-center">
           {[
             { step: 1, label: 'Apply', path: '/apply' },
@@ -130,6 +129,7 @@ const PersonalInformation = () => {
           ))}
         </div>
 
+        {/* Progress Info */}
         <div className="relative pt-1 mb-6">
           <div className="flex items-center justify-between mb-2">
             <span className="inline-block px-2 py-1 text-xs font-semibold text-teal-600 uppercase bg-teal-200 rounded-full">
@@ -145,6 +145,7 @@ const PersonalInformation = () => {
           </div>
         </div>
 
+        {/* Form */}
         <form
           onSubmit={handleSubmit(onSubmit)}
           autoComplete="off"
@@ -168,7 +169,6 @@ const PersonalInformation = () => {
               {...register('name', { required: 'Full Name is required' })}
               onFocus={() => setFocusedField('name')}
               onBlur={() => setFocusedField('')}
-
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}

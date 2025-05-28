@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
@@ -8,26 +8,14 @@ const DocumentUpdates = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
-  const documentUpdates = useSelector((state) => state.formData.documentUpdates);
-
   const { register, handleSubmit, formState: { errors }, setValue } = useForm();
 
   const [preview, setPreview] = useState(null);
 
-  // On mount, load preview from Redux if available
-  useEffect(() => {
-    if (documentUpdates.previewUrl) {
-      setPreview(documentUpdates.previewUrl);
-      // Also set form value so react-hook-form knows about the file (optional)
-      // Can't really set file object here from URL, so skipping that part
-    }
-  }, [documentUpdates.previewUrl]);
-
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
-      const previewUrl = URL.createObjectURL(file);
-      setPreview(previewUrl);
+      setPreview(URL.createObjectURL(file));
       setValue('document', e.target.files);
     } else {
       setPreview(null);
@@ -87,32 +75,33 @@ const DocumentUpdates = () => {
 
         {/* Step Indicator */}
         <div className="mb-6 grid grid-cols-8 gap-x-3 gap-y-2 text-xs font-semibold text-center">
-          {[
-            { step: 1, label: 'Apply', path: '/apply' },
-            { step: 2, label: (<><span>Personal</span><br /><span>Info</span></>), path: '/apply/personal-info' },
-            { step: 3, label: (<><span>Employee</span><br /><span>Details</span></>), path: '/apply/employee-details' },
-            { step: 4, label: (<><span>Loan</span><br /><span>Details</span></>), path: '/apply/loan-details' },
-            { step: 5, label: (<><span>Document</span><br /><span>Updates</span></>), path: '/apply/document-updates' },
-            { step: 6, label: 'Summary', path: '/apply/summary' },
-            { step: 7, label: 'Review', path: '/apply/review' },
-            { step: 8, label: 'Thank you', path: '/thank-you' },
-          ].map(({ step, label, path }) => (
-            <div
-              key={step}
-              className="flex flex-col items-center col-span-1 cursor-pointer"
-              onClick={() => navigate(path)}
-            >
-              <span
-                className={`w-7 h-7 flex items-center justify-center rounded-full font-bold ${
-                  step === currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'
-                }`}
-              >
-                {step}
-              </span>
-              <span className="mt-1 truncate">{label}</span>
-            </div>
-          ))}
-        </div>
+  {[
+    { step: 1, label: 'Apply', path: '/apply' },
+    { step: 2, label: (<><span>Personal</span><br /><span>Info</span></>), path: '/apply/personal-info' },
+    { step: 3, label: (<><span>Employee</span><br /><span>Details</span></>), path: '/apply/employee-details' },
+    { step: 4, label: (<><span>Loan</span><br /><span>Details</span></>), path: '/apply/loan-details' },
+    { step: 5, label: (<><span>Document</span><br /><span>Updates</span></>), path: '/apply/document-updates' },
+    { step: 6, label: 'Summary', path: '/apply/summary' },
+    { step: 7, label: 'Review', path: '/apply/review' },
+    { step: 8, label: 'Thank you', path: '/thank-you' },
+  ].map(({ step, label, path }) => (
+    <div
+      key={step}
+      className="flex flex-col items-center col-span-1 cursor-pointer"
+      onClick={() => navigate(path)}
+    >
+      <span
+        className={`w-7 h-7 flex items-center justify-center rounded-full font-bold ${
+          step === currentStep ? 'bg-emerald-600 text-white' : 'bg-gray-300 text-gray-600'
+        }`}
+      >
+        {step}
+      </span>
+      <span className="mt-1 truncate">{label}</span>
+    </div>
+  ))}
+</div>
+
 
         {/* Progress Bar */}
         <div className="w-full max-w-md mx-auto">

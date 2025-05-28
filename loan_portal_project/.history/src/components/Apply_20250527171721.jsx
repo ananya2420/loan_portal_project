@@ -96,7 +96,10 @@ const Apply = () => {
     }
   };
 
- 
+  // <-- REMOVED THIS BLOCK TO ALLOW SUMMARY PAGE ACCESS EVEN IF FORM INCOMPLETE
+  // if (step === 6 && !isFormComplete()) {
+  //   return <Navigate to="/apply" />;
+  // }
 
   const steps = [
     { step: 1, label: 'Apply', path: '/apply' },

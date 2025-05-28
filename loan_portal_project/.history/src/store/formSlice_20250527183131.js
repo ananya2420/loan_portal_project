@@ -1,4 +1,3 @@
-// src/store/formSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
@@ -7,9 +6,9 @@ const initialState = {
   documentUpdates: {
     isUpdated: false,
     fileName: '',
-    file: null, 
+    file: null, // this will not be persisted
   },
-  employeeDetails: {},  
+  employeeDetails: {},
 };
 
 const formSlice = createSlice({
@@ -29,7 +28,7 @@ const formSlice = createSlice({
       };
     },
     setEmployeeDetails: (state, action) => {
-      state.employeeDetails = action.payload;  // <-- camelCase here too
+      state.employeeDetails = action.payload;
     },
     clearLoanDetails: (state) => {
       state.loanDetails = { amount: '', type: '', term: '', emiDate: '' };
@@ -48,3 +47,4 @@ export const {
 } = formSlice.actions;
 
 export default formSlice.reducer;
+

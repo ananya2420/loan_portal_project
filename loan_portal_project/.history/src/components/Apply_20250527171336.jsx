@@ -96,7 +96,9 @@ const Apply = () => {
     }
   };
 
- 
+  if (step === 6 && !isFormComplete()) {
+    return <Navigate to="/apply" />;
+  }
 
   const steps = [
     { step: 1, label: 'Apply', path: '/apply' },
@@ -133,6 +135,11 @@ const Apply = () => {
               key={s}
               className="flex flex-col items-center col-span-1 cursor-pointer"
               onClick={() => {
+                // Block navigation to Summary (step 6) if form is incomplete
+                if (s === 6 && !isFormComplete()) {
+                  alert('Please complete all required steps before viewing Summary.');
+                  return;
+                }
                 setStep(s);
                 navigate(path);
               }}
@@ -216,3 +223,7 @@ const Apply = () => {
 };
 
 export default Apply;
+
+
+
+

@@ -7,7 +7,7 @@ import { setConfirmation } from '../redux/slices/formSlice';
 
 const Review = () => {
 
-  const [step, setStep] = useState(7);
+  const [step, setStep] = useState(1);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();

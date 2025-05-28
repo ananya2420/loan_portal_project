@@ -11,16 +11,12 @@ import 'react-datepicker/dist/react-datepicker.css';
 const sampleUsers = [];
 
 const PersonalInformation = () => {
-  const personalInfo = useSelector((state) => state.formData.personalInfo);
-
-  const [selectedDate, setSelectedDate] = useState(
-    personalInfo?.dob ? new Date(personalInfo.dob) : null
-  );
-  const [dobError, setDobError] = useState('');
+  const [selectedDate, setSelectedDate] = useState(null);
 
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const theme = useSelector((state) => state.theme.theme);
+  const personalInfo = useSelector((state) => state.formData.personalInfo);
 
   const {
     register,
@@ -32,6 +28,23 @@ const PersonalInformation = () => {
     mode: 'onChange',
     defaultValues: personalInfo || { name: '', dob: '', phone: '', email: '' },
   });
+
+  useEffect(() => {
+    register('dob', { required: 'Date of Birth is required' });
+  }, [register]);
+
+  useEffect(() => {
+    if (personalInfo?.dob) {
+      setSelectedDate(new Date(personalInfo.dob));
+      setValue('dob', personalInfo.dob);
+    }
+  }, [personalInfo, setValue]);
+
+  useEffect(() => {
+    if (selectedDate) {
+      setValue('dob', selectedDate.toISOString().split('T')[0]);
+    }
+  }, [selectedDate, setValue]);
 
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [focusedField, setFocusedField] = useState('');
@@ -53,15 +66,7 @@ const PersonalInformation = () => {
   }, [watchName, focusedField]);
 
   const onSubmit = (data) => {
-    if (!selectedDate) {
-      setDobError('Date of Birth is required');
-      return;
-    } else {
-      setDobError('');
-    }
-
-    const completeData = { ...data, dob: selectedDate.toISOString().split('T')[0] };
-    dispatch(setPersonalInfo(completeData));
+    dispatch(setPersonalInfo(data));
     navigate('/apply/employee-details');
   };
 
@@ -74,6 +79,7 @@ const PersonalInformation = () => {
     setValue('dob', user.dob);
     setValue('phone', user.phone);
     setValue('email', user.email);
+    setSelectedDate(new Date(user.dob));
     setFilteredUsers([]);
   };
 
@@ -125,7 +131,9 @@ const PersonalInformation = () => {
               >
                 {step}
               </span>
-              <span className="mt-1 truncate">{label}</span>
+              <span className="mt-1 truncate" title={typeof label === 'string' ? label : undefined}>
+                {label}
+              </span>
             </div>
           ))}
         </div>
@@ -168,13 +176,9 @@ const PersonalInformation = () => {
               {...register('name', { required: 'Full Name is required' })}
               onFocus={() => setFocusedField('name')}
               onBlur={() => setFocusedField('')}
-
               className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
             {errors.name && <p className="text-sm text-red-500 mt-1">{errors.name.message}</p>}
-            {hoverField === 'name' && focusedField !== 'name' && (
-              <ul className="absolute z-10 w-full max-h-40 overflow-auto mt-1 border rounded shadow-lg bg-white" />
-            )}
             {filteredUsers.length > 0 && focusedField === 'name' && (
               <ul className="absolute z-10 w-full max-h-40 overflow-auto mt-1 border rounded shadow-lg bg-white">
                 {filteredUsers.map((user, idx) => (
@@ -194,18 +198,15 @@ const PersonalInformation = () => {
           <div className="w-full">
             <DatePicker
               selected={selectedDate}
-              onChange={(date) => {
-                setSelectedDate(date);
-                if (date) setDobError('');
-              }}
+              onChange={(date) => setSelectedDate(date)}
               placeholderText="Date of Birth"
               dateFormat="yyyy-MM-dd"
               showMonthDropdown
               showYearDropdown
               dropdownMode="select"
-              className="w-[384px] px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-left"
+              className="w-full px-4 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-left"
             />
-            {dobError && <p className="text-sm text-red-500 mt-1">{dobError}</p>}
+            {errors.dob && <p className="text-sm text-red-500 mt-1">{errors.dob.message}</p>}
           </div>
 
           {/* Phone */}
@@ -253,7 +254,9 @@ const PersonalInformation = () => {
               type="button"
               onClick={handleBack}
               className={`px-4 py-2 rounded transition border ${
-                theme === 'dark' ? 'text-white border-gray-500 hover:bg-gray-700' : 'text-gray-700 border-gray-200 hover:bg-gray-100'
+                theme === 'dark'
+                  ? 'text-white border-gray-500 hover:bg-gray-700'
+                  : 'text-gray-700 border-gray-200 hover:bg-gray-100'
               }`}
             >
               Back
@@ -275,3 +278,9 @@ const PersonalInformation = () => {
 };
 
 export default PersonalInformation;
+
+
+
+
+
+

@@ -198,3 +198,4 @@ const DocumentUpdates = () => {
 };
 
 export default DocumentUpdates;
+
