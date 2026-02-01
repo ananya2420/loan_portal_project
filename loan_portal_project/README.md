@@ -54,4 +54,4 @@ http://localhost:5174/review
 http://localhost:5174/thank-you 
 http://localhost:5174/summery 
 
-
+Netlify Link-magical-twilight-b6f1ba.netlify.app
